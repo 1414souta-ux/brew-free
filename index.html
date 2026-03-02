@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BREW">
+<meta name="theme-color" content="#C8956C">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>BREW — Coffee Recipe Optimizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D0B09; --s1: #161310; --s2: #1E1A16; --s3: #26201A;
+  --b1: #2E2620; --b2: #3A3028;
+  --accent: #C8956C; --accent2: #E8B48A;
+  --t1: #F0E8DC; --t2: #A89880; --t3: #6A5A48;
+  --safe: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--t1); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; overflow-x: hidden; }
+body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 9999; }
+
+.app { max-width: 860px; margin: 0 auto; padding: 0 18px calc(40px + var(--safe)); }
+
+.header { display: flex; align-items: center; gap: 14px; padding: 36px 0 22px; border-bottom: 1px solid var(--b1); margin-bottom: 36px; position: sticky; top: 0; background: var(--bg); z-index: 10; }
+.logo { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; color: var(--accent); letter-spacing: -0.5px; }
+.logo-sub { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--t3); font-family: 'DM Mono', monospace; }
+.vs3-badge { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--t3); background: var(--s2); border: 1px solid var(--b1); padding: 5px 11px; border-radius: 2px; letter-spacing: 1px; white-space: nowrap; }
+
+.screen { animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.field { margin-bottom: 16px; }
+label, .lbl { display: block; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--t3); margin-bottom: 8px; }
+input, select, textarea { width: 100%; background: var(--s1); border: 1px solid var(--b1); color: var(--t1); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 300; padding: 12px 14px; border-radius: 2px; outline: none; transition: border-color 0.15s; -webkit-appearance: none; appearance: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236A5A48' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+select option { background: #1E1A16; }
+textarea { resize: vertical; min-height: 72px; line-height: 1.7; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.dripper-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+.dripper-btn { background: var(--s1); border: 1px solid var(--b1); color: var(--t2); padding: 13px 6px; border-radius: 2px; cursor: pointer; text-align: center; transition: all 0.15s; -webkit-user-select: none; }
+.dripper-btn.active { background: var(--s3); border-color: var(--accent); color: var(--accent); }
+.dripper-icon { font-size: 20px; display: block; margin-bottom: 5px; }
+.dripper-name { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+
+.btn-primary { width: 100%; padding: 15px; background: var(--accent); color: #0D0B09; border: none; border-radius: 2px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600; cursor: pointer; transition: all 0.15s; margin-top: 6px; }
+.btn-primary:active { background: var(--accent2); }
+.btn-ghost { width: 100%; padding: 13px; background: var(--s2); color: var(--t2); border: 1px solid var(--b1); border-radius: 2px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.15s; margin-top: 28px; }
+
+.recipe-header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--b1); padding-bottom: 20px; margin-bottom: 28px; }
+.recipe-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--t1); }
+.tag { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); background: var(--s2); border: 1px solid var(--b1); padding: 3px 9px; border-radius: 1px; }
+.tag-dim { color: var(--t3); }
+
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 22px; }
+.stat-card { background: var(--s1); border: 1px solid var(--b1); padding: 14px 14px 12px; border-radius: 2px; }
+.stat-label { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--t3); margin-bottom: 8px; }
+.stat-val { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--accent); line-height: 1; }
+.stat-unit { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--t3); margin-left: 2px; }
+
+.vs3-box { background: var(--s2); border: 1px solid var(--b1); border-left: 3px solid var(--accent); padding: 18px 20px; margin-bottom: 24px; border-radius: 0 2px 2px 0; }
+.vs3-lbl { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.vs3-num { font-family: 'Playfair Display', serif; font-size: 44px; color: var(--t1); line-height: 1; display: inline-block; margin-right: 14px; }
+.vs3-detail { font-size: 13px; color: var(--t2); line-height: 1.7; }
+
+.recipe-section { margin-bottom: 26px; padding-bottom: 26px; border-bottom: 1px solid var(--b1); }
+.section-lbl { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--t3); margin-bottom: 12px; }
+.body-text { font-size: 14px; line-height: 1.9; color: var(--t2); }
+.steps { list-style: none; }
+.step { display: grid; grid-template-columns: 28px 1fr; gap: 14px; margin-bottom: 12px; align-items: start; }
+.step-n { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); padding-top: 3px; }
+.step-t { font-size: 14px; color: var(--t2); line-height: 1.8; }
+.adjust-box { background: var(--s1); border: 1px solid var(--b2); padding: 14px 18px; border-radius: 2px; font-size: 13px; color: var(--t3); line-height: 1.7; font-family: 'DM Mono', monospace; }
+
+.install-banner { background: var(--s2); border: 1px solid var(--b2); border-radius: 2px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 24px; cursor: pointer; }
+.install-icon { font-size: 22px; flex-shrink: 0; }
+.install-text { font-size: 13px; color: var(--t2); line-height: 1.5; }
+.install-text strong { color: var(--t1); display: block; margin-bottom: 2px; font-weight: 500; }
+.install-arrow { margin-left: auto; color: var(--t3); font-size: 18px; }
+
+@media (max-width: 520px) {
+  .dripper-grid { grid-template-columns: repeat(2,1fr); }
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+  .grid2 { grid-template-columns: 1fr; }
+  .vs3-num { font-size: 36px; }
+  .header { padding-top: 24px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="logo">BREW</div>
+      <div class="logo-sub">Recipe Optimizer</div>
+    </div>
+    <div class="vs3-badge">Varia VS3</div>
+  </div>
+
+  <div class="install-banner" id="installBanner" style="display:none" onclick="installPWA()">
+    <span class="install-icon">📲</span>
+    <div class="install-text"><strong>ホーム画面に追加</strong>オフラインでも使えるアプリとしてインストール</div>
+    <span class="install-arrow">›</span>
+  </div>
+
+  <!-- FORM -->
+  <div id="formScreen" class="screen">
+    <div class="field">
+      <div class="lbl">Brewing Method</div>
+      <div class="dripper-grid">
+        <button class="dripper-btn active" data-d="V60" onclick="pickDripper(this)"><span class="dripper-icon">△</span><span class="dripper-name">V60</span></button>
+        <button class="dripper-btn" data-d="Kalita" onclick="pickDripper(this)"><span class="dripper-icon">⬡</span><span class="dripper-name">Kalita</span></button>
+        <button class="dripper-btn" data-d="Origami" onclick="pickDripper(this)"><span class="dripper-icon">◇</span><span class="dripper-name">Origami</span></button>
+        <button class="dripper-btn" data-d="Espresso" onclick="pickDripper(this)"><span class="dripper-icon">☕</span><span class="dripper-name">Espresso</span></button>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="field">
+        <label>Origin / 産地</label>
+        <input id="origin" placeholder="例：エチオピア イルガチェフェ" />
+      </div>
+      <div class="field">
+        <label>Variety / 品種</label>
+        <input id="variety" placeholder="例：Heirloom / Gesha" />
+      </div>
+      <div class="field">
+        <label>Process / 精製</label>
+        <select id="process">
+          <option value="">選択</option>
+          <option value="washed">Washed</option>
+          <option value="natural">Natural</option>
+          <option value="honey">Honey</option>
+          <option value="anaerobic">Anaerobic</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Roast / 焙煎度</label>
+        <select id="roast">
+          <option value="">選択</option>
+          <option value="light">Light（浅煎り）</option>
+          <option value="light-medium">Light-Medium</option>
+          <option value="medium">Medium（中煎り）</option>
+          <option value="medium-dark">Medium-Dark</option>
+          <option value="dark">Dark（深煎り）</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Roast Date / 焙煎日</label>
+        <input id="roastDate" type="date" />
+      </div>
+      <div class="field">
+        <label>Dose / 豆量（g）</label>
+        <input id="dose" type="number" placeholder="15" min="5" max="30" />
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="generate()">OPTIMIZE RECIPE</button>
+  </div>
+
+  <!-- RECIPE -->
+  <div id="recipeScreen" class="screen" style="display:none">
+    <div class="recipe-header">
+      <div class="recipe-title" id="rTitle"></div>
+      <div class="tag" id="rDripper"></div>
+      <div class="tag tag-dim" id="rDay" style="display:none"></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Temp</div><span class="stat-val" id="rTemp">—</span><span class="stat-unit">℃</span></div>
+      <div class="stat-card"><div class="stat-label">Dose</div><span class="stat-val" id="rDose">—</span><span class="stat-unit">g</span></div>
+      <div class="stat-card"><div class="stat-label">Water</div><span class="stat-val" id="rWater">—</span><span class="stat-unit">g</span></div>
+      <div class="stat-card"><div class="stat-label">Time</div><span class="stat-val" id="rTime" style="font-size:20px;padding-top:4px">—</span></div>
+    </div>
+    <div class="vs3-box">
+      <div class="vs3-lbl">▸ Varia VS3 — Recommended Setting</div>
+      <div><span class="vs3-num" id="rVs3">—</span><span class="vs3-detail" id="rVs3d"></span></div>
+    </div>
+    <div class="recipe-section" id="rRationale"></div>
+    <div class="recipe-section" id="rSteps"></div>
+    <div id="rAdjust"></div>
+    <button class="btn-ghost" onclick="showForm()">← NEW RECIPE</button>
+  </div>
+</div>
+
+<script>
+let dripper = 'V60';
+let deferredInstall = null;
+
+// ── Init ──
+document.getElementById('roastDate').value = new Date().toISOString().split('T')[0];
+loadSavedInputs();
+
+// ── PWA ──
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredInstall = e;
+  document.getElementById('installBanner').style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').style.display = 'none';
+});
+function installPWA() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  deferredInstall.userChoice.then(() => { deferredInstall = null; document.getElementById('installBanner').style.display = 'none'; });
+}
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+function pickDripper(btn) {
+  document.querySelectorAll('.dripper-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  dripper = btn.dataset.d;
+}
+
+function v(id) { return document.getElementById(id).value; }
+function getDays() {
+  const d = v('roastDate');
+  return d ? Math.floor((Date.now() - new Date(d)) / 86400000) : null;
+}
+
+function saveInputs() {
+  localStorage.setItem('brew_inputs', JSON.stringify({ dripper, origin: v('origin'), variety: v('variety'), process: v('process'), roast: v('roast'), dose: v('dose') }));
+}
+function loadSavedInputs() {
+  try {
+    const d = JSON.parse(localStorage.getItem('brew_inputs') || '{}');
+    if (d.origin) document.getElementById('origin').value = d.origin;
+    if (d.variety) document.getElementById('variety').value = d.variety;
+    if (d.process) document.getElementById('process').value = d.process;
+    if (d.roast) document.getElementById('roast').value = d.roast;
+    if (d.dose) document.getElementById('dose').value = d.dose;
+    if (d.dripper) { const btn = document.querySelector(`[data-d="${d.dripper}"]`); if (btn) pickDripper(btn); }
+  } catch(e) {}
+}
+
+// ─────────────────────────────────────────
+// RECIPE ENGINE（ルールベース）
+// ─────────────────────────────────────────
+function generate() {
+  saveInputs();
+  const roast   = v('roast') || 'medium';
+  const process = v('process') || 'washed';
+  const dose    = parseFloat(v('dose')) || 15;
+  const days    = getDays();
+  const origin  = v('origin') || '';
+  const variety = v('variety') || '';
+
+  const recipe = calcRecipe({ dripper, roast, process, dose, days, origin, variety });
+  renderRecipe(recipe);
+}
+
+function calcRecipe({ dripper, roast, process, dose, days, origin, variety }) {
+  // ── 焙煎度スコア（0=浅, 2=中, 4=深）──
+  const roastScore = { light: 0, 'light-medium': 1, medium: 2, 'medium-dark': 3, dark: 4 }[roast] ?? 2;
+
+  // ── 精製スコア（ferment: 発酵度合い）──
+  const ferment = { washed: 0, honey: 1, natural: 2, anaerobic: 3 }[process] ?? 0;
+
+  // ── 器具別ベース設定 ──
+  const bases = {
+    V60:      { ratio: 16.5, timeBase: '2:45', timeRange: '2:30〜3:00', vs3Base: 10.0 },
+    Kalita:   { ratio: 16.0, timeBase: '3:15', timeRange: '3:00〜3:30', vs3Base: 10.5 },
+    Origami:  { ratio: 16.5, timeBase: '3:00', timeRange: '2:45〜3:15', vs3Base: 10.0 },
+    Espresso: { ratio: 2.2,  timeBase: '28秒',  timeRange: '25〜32秒',   vs3Base: 3.5  },
+  };
+  const base = bases[dripper] || bases.V60;
+  const isEspresso = dripper === 'Espresso';
+
+  // ── 湯温計算 ──
+  // 浅煎り→高温、深煎り→低温。精製で微調整
+  let temp = isEspresso
+    ? 94 - roastScore * 1.5
+    : 96 - roastScore * 1.5 - (ferment > 1 ? 1 : 0);
+  temp = Math.round(temp);
+
+  // ── 水量 ──
+  const water = isEspresso
+    ? Math.round(dose * base.ratio * 10) / 10
+    : Math.round(dose * base.ratio);
+
+  // ── VS3設定 ──
+  // 浅煎り→細かく（数値小）、深煎り→粗く（数値大）
+  // Anaerobic/Natural→やや細かく（抽出しやすい）
+  let vs3 = base.vs3Base
+    + (roastScore - 2) * 0.5           // 焙煎補正：深いほど+
+    - (ferment > 0 ? ferment * 0.3 : 0) // 精製補正：発酵多いほど細かく
+    + (days !== null && days < 7 ? 0.5 : 0); // 新鮮な豆は少し粗め（ガス多い）
+  vs3 = Math.round(vs3 * 2) / 2; // 0.5刻みに丸める
+
+  const vs3Range = isEspresso
+    ? `${vs3}`
+    : `${vs3 - 0.5}〜${vs3 + 0.5}`;
+
+  // ── タイトル生成 ──
+  const originShort = origin.split(/[\s　]/)[0] || 'Coffee';
+  const processLabel = { washed:'Washed', natural:'Natural', honey:'Honey', anaerobic:'Anaerobic' }[process] || '';
+  const roastLabel = { light:'Light', 'light-medium':'Light+', medium:'Medium', 'medium-dark':'Medium+', dark:'Dark' }[roast] || '';
+  const title = `${originShort} ${processLabel} / ${dripper} ${roastLabel}`.trim();
+
+  // ── 蒸らし量 ──
+  const bloom = Math.round(dose * 2);
+
+  // ── 手順生成 ──
+  const steps = buildSteps({ dripper, dose, water, bloom, temp, roastScore, ferment, days, vs3 });
+
+  // ── 根拠テキスト ──
+  const rationale = buildRationale({ dripper, roast, process, roastScore, ferment, temp, vs3, days });
+
+  // ── ダイヤリングヒント ──
+  const adjustmentTips = buildAdjust({ dripper, isEspresso });
+
+  return {
+    title, temp, dose, water,
+    time: base.timeRange,
+    vs3Setting: vs3Range,
+    vs3Detail: buildVs3Detail({ roast, process, days, isEspresso }),
+    rationale, steps, adjustmentTips,
+  };
+}
+
+function buildSteps({ dripper, dose, water, bloom, temp, roastScore, ferment, days, vs3 }) {
+  const isEspresso = dripper === 'Espresso';
+  const bloomTime = days !== null && days < 5 ? '40〜50秒' : '30〜40秒';
+
+  if (isEspresso) {
+    return [
+      `VS3を#${vs3}に設定し、${dose}gを挽く。`,
+      `WDT（細いピックで粉をほぐす）でバスケット内を均一に分配する。`,
+      `15〜20kgの圧力で水平にタンピング。ねじり不要。`,
+      `${temp}℃でプレインフュージョン3〜5秒 → 本抽出開始。`,
+      `${Math.round(dose * 2.2)}g（1:2.2）を目安にブロンドが出始めたら終了。`,
+      `酸が強すぎる→湯温+1℃ / 苦い→湯温-1℃またはVS3を粗く。`,
+    ];
+  }
+
+  const pour2 = Math.round((water - bloom) * 0.55 + bloom);
+  const pour3 = water;
+
+  const steps = [
+    `ドリッパーと器具を${temp}℃の湯で十分にプレヒート（30秒以上）。`,
+    `VS3を#${vs3 - 0.5}〜${vs3 + 0.5}に設定し、${dose}gを挽く。`,
+    `${bloom}g（豆量の2倍）で蒸らし${bloomTime}。全体が均一に湿るよう中心から外へ螺旋状に注ぐ。`,
+    `蒸らし終了後、${pour2}gまで注湯（中心から外へ螺旋）。液面が半分落ちたら次へ。`,
+    `${pour3}gまで注いで抽出完了。落ちきるまで待つ。`,
+  ];
+
+  if (ferment >= 2) {
+    steps.push('ナチュラル・アナエロビック系は過抽出になりやすい。落ちきりが遅ければVS3を0.5粗く。');
+  }
+  if (roastScore <= 1) {
+    steps.push('浅煎りはフローラルアロマが出る適正抽出が狭い。酸が強いならVS3を0.5細かく。');
+  }
+  return steps;
+}
+
+function buildRationale({ dripper, roast, process, roastScore, ferment, temp, vs3, days }) {
+  const tempReason = roastScore <= 1
+    ? `浅煎りはフローラル・酸の透明感を引き出すため高め（${temp}℃）`
+    : roastScore >= 3
+    ? `深煎りは苦みの過抽出を防ぐため低め（${temp}℃）`
+    : `中煎りの甘みとバランスに適した温度（${temp}℃）`;
+
+  const processReason = ferment === 0
+    ? 'ウォッシュドは豆の個性がクリーンに出る'
+    : ferment === 1
+    ? 'ハニーは甘みとフルーツのバランスが特徴'
+    : ferment === 2
+    ? 'ナチュラルはベリー系の甘みが強く、接触時間に注意'
+    : 'アナエロビックは発酵香が強いため温度と時間を抑える';
+
+  const freshnessNote = days !== null
+    ? days < 5 ? `焙煎後${days}日とCO₂が多いため蒸らしを長めに。` : days > 21 ? `焙煎後${days}日経過。蒸らしを短めに設定。` : ''
+    : '';
+
+  return `${tempReason}に設定。${processReason}。VS3は#${vs3}を基準に豆の密度と精製を考慮して算出。${freshnessNote}`.trim();
+}
+
+function buildAdjust({ dripper, isEspresso }) {
+  if (isEspresso) {
+    return '速すぎる(〜20秒)→VS3を細かく / 遅すぎる(40秒超)→粗く / 酸が鋭い→湯温+1℃ / 苦い→湯温-1℃またはレシオを伸ばす(1:2.5)';
+  }
+  return '酸っぱい・薄い→VS3を0.5細かく / 苦い・重い→VS3を0.5粗くまたは湯温-1℃ / 薄いが味は良い→豆量を+1g / 毎回バラつく→注湯速度を一定に';
+}
+
+function buildVs3Detail({ roast, process, days, isEspresso }) {
+  const parts = [];
+  if (roast === 'light' || roast === 'light-medium') parts.push('浅煎りのため細かめ');
+  else if (roast === 'dark' || roast === 'medium-dark') parts.push('深煎りのため粗め');
+  if (process === 'natural' || process === 'anaerobic') parts.push('発酵系で補正');
+  if (days !== null && days < 7) parts.push('新鮮につき+0.5');
+  if (!parts.length) parts.push(isEspresso ? 'エスプレッソ標準範囲' : 'フィルター標準範囲');
+  return parts.join('・');
+}
+
+// ── Render ──
+function renderRecipe(r) {
+  document.getElementById('rTitle').textContent = r.title;
+  document.getElementById('rDripper').textContent = dripper;
+  const days = getDays();
+  const dayEl = document.getElementById('rDay');
+  if (days !== null) { dayEl.textContent = `Day ${days}`; dayEl.style.display = ''; }
+  else dayEl.style.display = 'none';
+
+  document.getElementById('rTemp').textContent = r.temp;
+  document.getElementById('rDose').textContent = r.dose;
+  document.getElementById('rWater').textContent = r.water;
+  document.getElementById('rTime').textContent = r.time;
+  document.getElementById('rVs3').textContent = r.vs3Setting;
+  document.getElementById('rVs3d').textContent = r.vs3Detail;
+
+  document.getElementById('rRationale').innerHTML = `
+    <div class="section-lbl">▸ Why this recipe</div>
+    <p class="body-text">${r.rationale}</p>`;
+
+  document.getElementById('rSteps').innerHTML = `
+    <div class="section-lbl">▸ Brew Steps</div>
+    <ol class="steps">${r.steps.map((s,i) => `
+      <li class="step"><span class="step-n">0${i+1}</span><span class="step-t">${s}</span></li>`).join('')}
+    </ol>`;
+
+  document.getElementById('rAdjust').innerHTML = `
+    <div class="section-lbl">▸ Dial-in Guide</div>
+    <div class="adjust-box">${r.adjustmentTips}</div>`;
+
+  document.getElementById('formScreen').style.display = 'none';
+  document.getElementById('recipeScreen').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showForm() {
+  document.getElementById('recipeScreen').style.display = 'none';
+  document.getElementById('formScreen').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
